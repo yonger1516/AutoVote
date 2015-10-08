@@ -49,7 +49,7 @@ public class VoteHandler {
 	static final int read_timeout = 60 * 1000;
 
 	static final int read_proxy_internal = 10 * 60 * 1000;
-	static final int max_threads = 40;
+	static final int max_threads = 100;
 
 	String reg_ts = "var timesp = '([0-9]+)';";
 	String reg_sign = "var sign = '(.*)';";
