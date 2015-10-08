@@ -117,7 +117,7 @@ public class VoteHandler {
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
 								                       try{
-								                       logger.debug("Get an available proxy host {}", proxy);
+								                       logger.info("Get an available proxy host {}", proxy);
 								                       int max_unavailable = 10;
 								                       for (int j = 0; j < 10; j++) {
 									                       HttpResponse response = openTokenPage(proxy, httpclient);
