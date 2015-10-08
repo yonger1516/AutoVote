@@ -62,7 +62,7 @@ public class ImportProxy extends TimerTask {
 			logger.error("File not found");
 			return false;
 		} catch (Exception e) {
-			logger.error("error when importing proxy list");
+			e.printStackTrace();
 			return false;
 		}
 		return true;
