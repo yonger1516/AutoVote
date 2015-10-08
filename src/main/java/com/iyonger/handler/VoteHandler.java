@@ -136,7 +136,7 @@ public class VoteHandler {
 									                       } else {
 										                       logger.debug("Response is not available.");
 										                       max_unavailable--;
-										                       if (max_unavailable == 0) {
+										                       if (max_unavailable <=1) {
 											                       proxy.setAvailable(false);
 										                       }
 									                       }
