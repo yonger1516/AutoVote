@@ -47,7 +47,7 @@ public class VoteHandler {
 	static final int connection_timeout = 60 * 1000;
 	static final int read_timeout = 60 * 1000;
 
-	static final int read_proxy_internal = 2 * 60 * 60 * 1000;
+	static final int read_proxy_internal = 1 * 60 * 60 * 1000;
 	static final int max_threads = 40;
 
 	String reg_ts = "var timesp = '([0-9]+)';";
@@ -116,6 +116,7 @@ public class VoteHandler {
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
 								                       logger.debug("Get an available proxy host {}", proxy);
+								                       int max_unavailable = 10;
 								                       for (int j = 0; j < 10; j++) {
 									                       HttpResponse response = openTokenPage(proxy, httpclient);
 									                       if (null != response) {
@@ -123,26 +124,33 @@ public class VoteHandler {
 										                       response = sendVotePost(token, proxy, httpclient);
 
 
-															if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
-																/*Success success = new Success();
-																success.setDate(new Date());*/
+															/*if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
+																*//*Success success = new Success();
+																success.setDate(new Date());*//*
 																//successRepository.saveAndFlush(success);
 
 																logger.info("Vote success!!!");
-															}
+															}*/
 
 									                       } else {
 										                       logger.debug("Response is not available.");
+										                       max_unavailable--;
+										                       if (max_unavailable == 0) {
+											                       proxy.setAvailable(false);
+										                       }
 									                       }
 
 									                       EntityUtils.consume(response.getEntity());
 								                       }
+
+								                       proxy.setLastModifyTime(new Date());
+								                       proxyRepository.saveAndFlush(proxy);
 							                       }
 							                       {
 								                       if (max_try++ < 10) {
 									                       delay(60);
 
-								                       }else{
+								                       } else {
 									                       break;
 								                       }
 
@@ -206,23 +214,19 @@ public class VoteHandler {
 			Future<HttpResponse> future = httpClient.execute(request, null);
 			HttpResponse response = future.get();
 			if (null == response || response.getStatusLine().getStatusCode() != 200) {
-				proxy.setAvailable(false);
+				//proxy.setAvailable(false);
 				resp = null;
 			} else {
-				proxy.setAvailable(true);
+				//proxy.setAvailable(true);
 				resp = response;
 			}
 
 		} catch (InterruptedException e) {
-			proxy.setAvailable(false);
-			e.printStackTrace();
+
 		} catch (ExecutionException e) {
-			proxy.setAvailable(false);
-			e.printStackTrace();
+
 		} finally {
 
-			proxy.setLastModifyTime(new Date());
-			proxyRepository.saveAndFlush(proxy);
 		}
 		return resp;
 	}
@@ -256,11 +260,10 @@ public class VoteHandler {
 
 		} catch (InterruptedException e) {
 
-			e.printStackTrace();
 		} catch (ExecutionException e) {
-			e.printStackTrace();
+
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+
 		} finally {
 
 		}
