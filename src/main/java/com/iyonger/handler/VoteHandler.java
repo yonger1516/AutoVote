@@ -1,6 +1,7 @@
 package com.iyonger.handler;
 
 import com.iyonger.model.Proxy;
+import com.iyonger.model.Success;
 import com.iyonger.model.Token;
 import com.iyonger.repository.ProxyRepository;
 import com.iyonger.repository.SuccessRepository;
@@ -124,13 +125,13 @@ public class VoteHandler {
 										                       response = sendVotePost(token, proxy, httpclient);
 
 
-															/*if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
-																*//*Success success = new Success();
-																success.setDate(new Date());*//*
-																//successRepository.saveAndFlush(success);
+															if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
+																Success success = new Success();
+																success.setDate(new Date());
+																successRepository.saveAndFlush(success);
 
 																logger.info("Vote success!!!");
-															}*/
+															}
 
 									                       } else {
 										                       logger.debug("Response is not available.");
@@ -145,8 +146,7 @@ public class VoteHandler {
 
 								                       proxy.setLastModifyTime(new Date());
 								                       proxyRepository.saveAndFlush(proxy);
-							                       }
-							                       {
+							                       } else {
 								                       if (max_try++ < 10) {
 									                       delay(60);
 
@@ -156,7 +156,7 @@ public class VoteHandler {
 
 							                       }
 						                       } catch (Exception e) {
-							                       e.printStackTrace();
+							                      // e.printStackTrace();
 						                       }
 					                       }
 
