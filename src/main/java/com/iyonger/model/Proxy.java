@@ -73,7 +73,7 @@ public class Proxy extends BaseModel<Proxy> {
 
 	@Override
 	public String toString(){
-		return "Ip:"+ip+",port"+Integer.toString(port)+",available:"+available+",last modify time:"+lastModifyTime;
+		return "Ip:"+ip+",port:"+Integer.toString(port)+",available:"+available+",last modify time:"+lastModifyTime;
 	}
 
 }

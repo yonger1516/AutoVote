@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,6 +17,6 @@ public interface ProxyRepository extends JpaRepository<Proxy,Long> {
 
 	public Proxy findByIp(String ip);
 
-	@Query("select p from Proxy p where p.available=?1 and p.lastModifyTime<current_date()")
-	public List<Proxy> findAllAvailableProxies(boolean available);
+	@Query("select p from Proxy p where p.available=?1 and p.lastModifyTime<?2")
+	public List<Proxy> findAllAvailableProxies(boolean available,Date date);
 }

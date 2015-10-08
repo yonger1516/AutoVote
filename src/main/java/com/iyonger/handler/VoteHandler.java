@@ -77,8 +77,8 @@ public class VoteHandler {
 			@Override
 			public void run() {
 
-				logger.info("Get available IP for every {} second ...", read_proxy_internal / 1000);
-				List<Proxy> proxies = proxyRepository.findAllAvailableProxies(true);
+				logger.info("Get available proxies for every {} second ...", read_proxy_internal / 1000);
+				List<Proxy> proxies = proxyRepository.findAllAvailableProxies(true,getTodayDate());
 
 				for (Proxy proxy : proxies) {
 					if (!proxyQueue.contains(proxy)) {

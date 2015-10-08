@@ -21,9 +21,9 @@ public class ProxyService {
 		this.proxyRepository=proxyRepository;
 	}
 
-	public List<Proxy> getAllAvailable(){
+	/*public List<Proxy> getAllAvailable(){
 		return proxyRepository.findAllAvailableProxies(true);
-	}
+	}*/
 
 	public List<Proxy> findByAvailable(boolean available){
 		return proxyRepository.findByAvailable(available);
