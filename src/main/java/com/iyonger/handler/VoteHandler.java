@@ -78,7 +78,7 @@ public class VoteHandler {
 			public void run() {
 
 				logger.info("Get available proxies for every {} second ...", read_proxy_internal / 1000);
-				List<Proxy> proxies = proxyRepository.findAllAvailableProxies(true,getTodayDate());
+				List<Proxy> proxies = proxyRepository.findAllAvailableProxies(true, getTodayDate());
 
 				for (Proxy proxy : proxies) {
 					if (!proxyQueue.contains(proxy)) {
@@ -110,63 +110,65 @@ public class VoteHandler {
 				                       @Override
 				                       public void run() {
 
-					                       int max_try = 1;
+					                       //int max_try = 1;
 					                       while (true) {
 						                       try {
 							                       logger.info("Vote handler running and queue size {}", proxyQueue.size());
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
-								                       try{
-								                       logger.info("Get an available proxy host {}", proxy);
-								                       int max_unavailable = 10;
-								                       for (int j = 0; j < 10; j++) {
-									                       HttpResponse response = openTokenPage(proxy, httpclient);
-									                       if (null != response) {
-										                       Token token = parseAndFlush(response);
-										                       response = sendVotePost(token, proxy, httpclient);
+								                       try {
+									                       logger.info("Get an available proxy host {}", proxy);
+									                       int max_unavailable = 10;
+									                       for (int j = 0; j < 10; j++) {
+										                       HttpResponse response = openTokenPage(proxy, httpclient);
+										                       if (null != response) {
+											                       Token token = parseAndFlush(response);
+											                       response = sendVotePost(token, proxy, httpclient);
 
 
-																if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
-																	Success success = new Success();
-																	success.setDate(new Date());
-																	successRepository.saveAndFlush(success);
+											                       if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
+												                       Success success = new Success();
+												                       success.setDate(new Date());
+												                       successRepository.saveAndFlush(success);
 
-																	logger.info("Vote success!!!");
-																}
+												                       logger.info("Vote success!!!");
+											                       }
 
-									                       } else {
-										                       logger.debug("Response is not available.");
-										                       max_unavailable--;
+										                       } else {
+											                       logger.debug("Response is not available.");
+											                       max_unavailable--;
 
+										                       }
+
+										                       EntityUtils.consume(response.getEntity());
 									                       }
+									                       if (max_unavailable <= 1) {
+										                       proxy.setAvailable(false);
+										                       logger.info("{} not available", proxy);
+									                       }
+								                       } catch (Exception e) {
 
-									                       EntityUtils.consume(response.getEntity());
-								                       }
-								                       if (max_unavailable <=1) {
-									                       proxy.setAvailable(false);
-									                       logger.info("{} not available",proxy);
-								                       }}catch (Exception e){
-
-								                       }finally {
+								                       } finally {
 									                       proxy.setLastModifyTime(new Date());
 									                       proxyRepository.saveAndFlush(proxy);
 								                       }
 
 							                       } else {
-								                       if (max_try++ < 10) {
+								                       delay(300);
+								                       /*if (max_try++ < 10) {
 									                       delay(60);
 
 								                       } else {
 									                       break;
-								                       }
+								                       }*/
 
 							                       }
 						                       } catch (Exception e) {
-							                      // e.printStackTrace();
+							                       // e.printStackTrace();
 						                       }
 					                       }
 
-					                       logger.info("Vote handler thread done after 10 times trying.");
+					                       //logger.info("Vote handler thread done after 10 times trying.");
 
 				                       }
 
