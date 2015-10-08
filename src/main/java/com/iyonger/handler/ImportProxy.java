@@ -42,18 +42,23 @@ public class ImportProxy extends TimerTask {
 			BufferedReader br = new BufferedReader(new FileReader(path));
 			String line = "";
 			while ((line = br.readLine()) != null) {
-				String[] arr = line.split(split_dot);
-				String ip = arr[0];
-				String port = arr[1];
+				try {
+					String[] arr = line.split(split_dot);
+					String ip = arr[0];
+					String port = arr[1];
 
-				if (proxyRepository.findByIp(ip) == null) {
-					Proxy proxy = new Proxy();
-					proxy.setIp(ip);
-					proxy.setPort(Integer.parseInt(port));
-					proxy.setAvailable(true);
-					SimpleDateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
-					proxy.setLastModifyTime(dft.parse("2015-10-03 10:00:00"));
-					proxyRepository.saveAndFlush(proxy);
+
+					if (proxyRepository.findByIp(ip) == null) {
+						Proxy proxy = new Proxy();
+						proxy.setIp(ip);
+						proxy.setPort(Integer.parseInt(port));
+						proxy.setAvailable(true);
+						SimpleDateFormat dft = new SimpleDateFormat("yyyy-MM-dd");
+						proxy.setLastModifyTime(dft.parse("2015-10-03 10:00:00"));
+						proxyRepository.saveAndFlush(proxy);
+					}
+				} catch (Exception e) {
+					logger.error("{} can not be parsed",line);
 				}
 
 			}
