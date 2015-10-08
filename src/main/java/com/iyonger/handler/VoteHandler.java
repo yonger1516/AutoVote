@@ -116,6 +116,7 @@ public class VoteHandler {
 							                       logger.info("Vote handler running and queue size {}", proxyQueue.size());
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
+								                       try{
 								                       logger.debug("Get an available proxy host {}", proxy);
 								                       int max_unavailable = 10;
 								                       for (int j = 0; j < 10; j++) {
@@ -125,27 +126,32 @@ public class VoteHandler {
 										                       response = sendVotePost(token, proxy, httpclient);
 
 
-															if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
-																Success success = new Success();
-																success.setDate(new Date());
-																successRepository.saveAndFlush(success);
+																if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
+																	Success success = new Success();
+																	success.setDate(new Date());
+																	successRepository.saveAndFlush(success);
 
-																logger.info("Vote success!!!");
-															}
+																	logger.info("Vote success!!!");
+																}
 
 									                       } else {
 										                       logger.debug("Response is not available.");
 										                       max_unavailable--;
-										                       if (max_unavailable <=1) {
-											                       proxy.setAvailable(false);
-										                       }
+
 									                       }
 
 									                       EntityUtils.consume(response.getEntity());
 								                       }
+								                       if (max_unavailable <=1) {
+									                       proxy.setAvailable(false);
+									                       logger.info("{} not available",proxy);
+								                       }}catch (Exception e){
 
-								                       proxy.setLastModifyTime(new Date());
-								                       proxyRepository.saveAndFlush(proxy);
+								                       }finally {
+									                       proxy.setLastModifyTime(new Date());
+									                       proxyRepository.saveAndFlush(proxy);
+								                       }
+
 							                       } else {
 								                       if (max_try++ < 10) {
 									                       delay(60);
