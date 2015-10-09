@@ -114,13 +114,14 @@ public class VoteHandler {
 					                       while (true) {
 						                       try {
 							                       logger.info("Vote handler running and queue size {}", proxyQueue.size());
+							                       HttpResponse response=null;
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
 								                       try {
 									                       logger.info("Get an available proxy host {}", proxy);
 									                       int max_unavailable = 10;
 									                       for (int j = 0; j < 10; j++) {
-										                       HttpResponse response = openTokenPage(proxy, httpclient);
+										                      response = openTokenPage(proxy, httpclient);
 										                       if (null != response) {
 											                       Token token = parseAndFlush(response);
 											                       response = sendVotePost(token, proxy, httpclient);
@@ -140,7 +141,6 @@ public class VoteHandler {
 
 										                       }
 
-										                       EntityUtils.consume(response.getEntity());
 									                       }
 									                       if (max_unavailable <= 1) {
 										                       proxy.setAvailable(false);
@@ -149,6 +149,9 @@ public class VoteHandler {
 								                       } catch (Exception e) {
 
 								                       } finally {
+									                       if (null!=response){
+										                       EntityUtils.consume(response.getEntity());
+									                       }
 									                       proxy.setLastModifyTime(new Date());
 									                       proxyRepository.saveAndFlush(proxy);
 								                       }
