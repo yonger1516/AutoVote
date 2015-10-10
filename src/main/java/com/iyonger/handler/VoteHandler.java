@@ -6,6 +6,7 @@ import com.iyonger.model.Token;
 import com.iyonger.repository.ProxyRepository;
 import com.iyonger.repository.SuccessRepository;
 import com.iyonger.repository.TokenRepository;
+import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -17,6 +18,7 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.util.EntityUtils;
@@ -44,7 +46,7 @@ public class VoteHandler {
 	private static final String target = "http://adonotify.meirixue.com/jinpai/wap/index2.php?no=4029&from=singlemessage&isappinstalled=0";
 
 	private static final String target2 = "http://adonotify.meirixue.com/jinpai/api.php";
-	private static final String ids = "4029";
+	private static final String ids = "1213";
 	static final int connection_timeout = 60 * 1000;
 	static final int read_timeout = 60 * 1000;
 
@@ -65,11 +67,17 @@ public class VoteHandler {
 
 	Queue<Proxy> proxyQueue = new ConcurrentLinkedQueue<Proxy>();
 
+	public static final Header[] headers=new Header[2];
+
 	@Autowired
 	public VoteHandler(TokenRepository tokenRepository, ProxyRepository proxyRepository, SuccessRepository repository) {
 		this.tokenRepository = tokenRepository;
 		this.successRepository = repository;
 		this.proxyRepository = proxyRepository;
+
+		headers[0]=new BasicHeader("User-Agent","Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)");
+		//headers[1]=new BasicHeader("Referer","http://adonotify.meirixue.com/jinpai/wap/index2.php?no="+ids);
+
 	}
 
 	public void inQueueSchedule() {
@@ -221,6 +229,7 @@ public class VoteHandler {
 			HttpGet request = new HttpGet(target);
 			request.setConfig(config);
 
+			request.setHeaders(headers);
 			Future<HttpResponse> future = httpClient.execute(request, null);
 			HttpResponse response = future.get();
 			if (null == response || response.getStatusLine().getStatusCode() != 200) {
@@ -256,6 +265,7 @@ public class VoteHandler {
 
 			HttpPost httpPost = new HttpPost(target2);
 			httpPost.setConfig(config);
+			httpPost.setHeaders(headers);
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			nvps.add(new BasicNameValuePair("ids", ids));
