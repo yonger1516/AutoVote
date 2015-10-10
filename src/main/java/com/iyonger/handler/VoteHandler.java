@@ -6,6 +6,7 @@ import com.iyonger.model.Token;
 import com.iyonger.repository.ProxyRepository;
 import com.iyonger.repository.SuccessRepository;
 import com.iyonger.repository.TokenRepository;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -67,7 +68,7 @@ public class VoteHandler {
 
 	Queue<Proxy> proxyQueue = new ConcurrentLinkedQueue<Proxy>();
 
-	public static final Header[] headers=new Header[2];
+	private static final String User_Agent="Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)";
 
 	@Autowired
 	public VoteHandler(TokenRepository tokenRepository, ProxyRepository proxyRepository, SuccessRepository repository) {
@@ -75,8 +76,6 @@ public class VoteHandler {
 		this.successRepository = repository;
 		this.proxyRepository = proxyRepository;
 
-		headers[0]=new BasicHeader("User-Agent","Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)");
-		//headers[1]=new BasicHeader("Referer","http://adonotify.meirixue.com/jinpai/wap/index2.php?no="+ids);
 
 	}
 
@@ -229,7 +228,8 @@ public class VoteHandler {
 			HttpGet request = new HttpGet(target);
 			request.setConfig(config);
 
-			request.setHeaders(headers);
+			request.addHeader("User-Agent", User_Agent);
+			logger.info(request.toString());
 			Future<HttpResponse> future = httpClient.execute(request, null);
 			HttpResponse response = future.get();
 			if (null == response || response.getStatusLine().getStatusCode() != 200) {
@@ -244,7 +244,9 @@ public class VoteHandler {
 
 		} catch (ExecutionException e) {
 
-		} finally {
+		} catch (Exception e){
+		}
+		finally {
 
 		}
 		return resp;
@@ -265,7 +267,7 @@ public class VoteHandler {
 
 			HttpPost httpPost = new HttpPost(target2);
 			httpPost.setConfig(config);
-			httpPost.setHeaders(headers);
+			httpPost.addHeader("User-Agent", User_Agent);
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			nvps.add(new BasicNameValuePair("ids", ids));
