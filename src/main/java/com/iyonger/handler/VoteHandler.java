@@ -6,8 +6,6 @@ import com.iyonger.model.Token;
 import com.iyonger.repository.ProxyRepository;
 import com.iyonger.repository.SuccessRepository;
 import com.iyonger.repository.TokenRepository;
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
-import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -47,7 +45,7 @@ public class VoteHandler {
 	private static final String target = "http://adonotify.meirixue.com/jinpai/wap/index2.php?no=4029&from=singlemessage&isappinstalled=0";
 
 	private static final String target2 = "http://adonotify.meirixue.com/jinpai/api.php";
-	private static final String ids = "1213";
+	private static final String ids = "4029";
 	static final int connection_timeout = 60 * 1000;
 	static final int read_timeout = 60 * 1000;
 
@@ -68,6 +66,8 @@ public class VoteHandler {
 
 	Queue<Proxy> proxyQueue = new ConcurrentLinkedQueue<Proxy>();
 
+	private static List<String> agents=new ArrayList<String>();
+
 	private static final String User_Agent="Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)";
 
 	@Autowired
@@ -77,6 +77,23 @@ public class VoteHandler {
 		this.proxyRepository = proxyRepository;
 
 
+		agents.add("Mozilla/5.0 (Windows NT 5.2) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.122 Safari/534.30");
+		agents.add("Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0");
+		agents.add("Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET4.0E; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)");
+		agents.add("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.2; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET4.0E; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)");
+		agents.add("Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727) ");
+		agents.add("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)");
+		agents.add("Opera/9.80 (Windows NT 5.1; U; zh-cn) Presto/2.9.168 Version/11.50");
+		agents.add("Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)");
+		agents.add("Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET4.0E; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)");
+		agents.add("Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN) AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1");
+		agents.add("Mozilla/5.0 (Windows; U; Windows NT 5.1; ) AppleWebKit/534.12 (KHTML, like Gecko) Maxthon/3.0 Safari/534.12");
+		agents.add("Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727; TheWorld)");
+		agents.add("Mozilla/5.0 (iPod; U; CPU iPhone OS 4_3_2 like Mac OS X; zh-cn) AppleWebKit/533.17.9 (KHTML, like Gecko) Version/5.0.2 Mobile/8H7 Safari/6533.18.5");
+		agents.add("MQQBrowser/25 (Linux; U; 2.3.3; zh-cn; HTC Desire S Build/GRI40;480*800)\n" +
+				"Mozilla/5.0 (Linux; U; Android 2.3.3; zh-cn; HTC_DesireS_S510e Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1");
+
+		agents.add("Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A5313e Safari/7534.48.3");
 	}
 
 	public void inQueueSchedule() {
@@ -121,6 +138,7 @@ public class VoteHandler {
 					                       while (true) {
 						                       try {
 							                       logger.info("Vote handler running and queue size {}", proxyQueue.size());
+							                       int agent_num=proxyQueue.size()%14;
 							                       HttpResponse response=null;
 							                       Proxy proxy = proxyQueue.poll();
 							                       if (null != proxy) {
@@ -128,10 +146,10 @@ public class VoteHandler {
 									                       logger.info("Get an available proxy host {}", proxy);
 									                       int max_unavailable = 10;
 									                       for (int j = 0; j < 10; j++) {
-										                      response = openTokenPage(proxy, httpclient);
+										                      response = openTokenPage(proxy, httpclient,agent_num);
 										                       if (null != response) {
 											                       Token token = parseAndFlush(response);
-											                       response = sendVotePost(token, proxy, httpclient);
+											                       response = sendVotePost(token, proxy, httpclient,agent_num);
 
 
 											                       if (EntityUtils.toString(response.getEntity()).contains("\"code\":200")) {
@@ -216,7 +234,7 @@ public class VoteHandler {
 		return token;
 	}
 
-	public HttpResponse openTokenPage(Proxy proxy, CloseableHttpAsyncClient httpClient) {
+	public HttpResponse openTokenPage(Proxy proxy, CloseableHttpAsyncClient httpClient,int agentNum) {
 		logger.debug("Send request to get token...");
 		HttpResponse resp = null;
 
@@ -228,8 +246,8 @@ public class VoteHandler {
 			HttpGet request = new HttpGet(target);
 			request.setConfig(config);
 
-			request.addHeader("User-Agent", User_Agent);
-			logger.info(request.toString());
+			request.addHeader("User-Agent", agents.get(agentNum));
+			//logger.info(request.toString());
 			Future<HttpResponse> future = httpClient.execute(request, null);
 			HttpResponse response = future.get();
 			if (null == response || response.getStatusLine().getStatusCode() != 200) {
@@ -252,7 +270,7 @@ public class VoteHandler {
 		return resp;
 	}
 
-	public HttpResponse sendVotePost(Token token, Proxy proxy, CloseableHttpAsyncClient httpClient) {
+	public HttpResponse sendVotePost(Token token, Proxy proxy, CloseableHttpAsyncClient httpClient,int agentNum) {
 
 		logger.debug("Send vote request with {} ", token);
 
@@ -267,7 +285,8 @@ public class VoteHandler {
 
 			HttpPost httpPost = new HttpPost(target2);
 			httpPost.setConfig(config);
-			httpPost.addHeader("User-Agent", User_Agent);
+			httpPost.addHeader("User-Agent", agents.get(agentNum));
+			httpPost.addHeader("Referer","http://adonotify.meirixue.com/jinpai/wap/index2.php?no=4029");
 
 			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 			nvps.add(new BasicNameValuePair("ids", ids));

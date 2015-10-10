@@ -86,7 +86,7 @@ public class ImportProxy extends TimerTask {
 	}
 
 	public void start() {
-		new Timer().schedule(this, 0, 60 * 60 * 1000);
+		new Timer().schedule(this, 0, 30 * 60 * 1000);
 
 		logger.info("Import proxy list to database...");
 	}
